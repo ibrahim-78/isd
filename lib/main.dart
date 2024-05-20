@@ -3,7 +3,6 @@ import 'package:flutter_slider_drawer/flutter_slider_drawer.dart';
 import 'package:overlapping_panels/overlapping_panels.dart';
 import 'package:overlapping_panels_demo/screens/left_page.dart';
 import 'package:overlapping_panels_demo/screens/main_page.dart';
-import 'package:overlapping_panels_demo/screens/right_page.dart';
 import 'package:overlapping_panels_demo/widgets/footer_widget.dart';
 
 void main() {

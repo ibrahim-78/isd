@@ -1,4 +1,4 @@
-#Mon May 20 12:13:38 EEST 2024
+#Mon May 20 17:35:12 EEST 2024
 base.0=C\:\\Users\\User\\Downloads\\overlapping_panels_demo-master\\overlapping_panels_demo-master\\build\\app\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes.dex
 base.1=C\:\\Users\\User\\Downloads\\overlapping_panels_demo-master\\overlapping_panels_demo-master\\build\\app\\intermediates\\dex\\debug\\mergeProjectDexDebug\\0\\classes.dex
 base.2=C\:\\Users\\User\\Downloads\\overlapping_panels_demo-master\\overlapping_panels_demo-master\\build\\app\\intermediates\\dex\\debug\\mergeProjectDexDebug\\1\\classes.dex
