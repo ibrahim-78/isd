@@ -1,8 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
-import 'package:web_socket_channel/io.dart';
+import 'package:http/http.dart' as http;
 import '../models/message.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -16,33 +15,49 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  late WebSocketChannel _channel;
   List<Message> _messages = [];
   TextEditingController _controller = TextEditingController();
+  bool _isLoading = true;
+  String _error = '';
 
   @override
   void initState() {
     super.initState();
-    _channel = IOWebSocketChannel.connect('ws://localhost:4000');
     _fetchMessages();
   }
 
-  @override
-  void dispose() {
-    _channel.sink.close();
-    super.dispose();
-  }
+  Future<void> _fetchMessages() async {
+    final url =
+        'http://192.168.1.117:4000/messages'; // Adjust the URL to your API endpoint
 
-  void _fetchMessages() {
-    _channel.stream.listen((message) {
-      final List<dynamic> messageJson = json.decode(message);
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> messageJson = json.decode(response.body);
+        setState(() {
+          _messages =
+              messageJson.map((json) => Message.fromJson(json)).toList();
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _error = 'Failed to load messages';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
       setState(() {
-        _messages = messageJson.map((json) => Message.fromJson(json)).toList();
+        _error = 'Failed to load messages: $e';
+        _isLoading = false;
       });
-    });
+    }
   }
 
-  void _sendMessage(String message) {
+  Future<void> _sendMessage(String message) async {
+    final url =
+        'http://192.168.1.117:4000/messages'; // Adjust the URL to your API endpoint
+
     final newMessage = Message(
       user: 'username', // Replace with actual user name
       message: message,
@@ -50,8 +65,26 @@ class _ChatScreenState extends State<ChatScreen> {
       timestamp: DateTime.now(),
     );
 
-    _channel.sink.add(json.encode(newMessage.toJson()));
-    _controller.clear();
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(newMessage.toJson()),
+      );
+
+      if (response.statusCode == 201) {
+        _controller.clear();
+        _fetchMessages(); // Refresh the message list after sending a new message
+      } else {
+        setState(() {
+          _error = 'Failed to send message';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _error = 'Failed to send message: $e';
+      });
+    }
   }
 
   @override
@@ -60,41 +93,46 @@ class _ChatScreenState extends State<ChatScreen> {
       appBar: AppBar(
         title: Text(widget.channel),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                final message = _messages[index];
-                return ListTile(
-                  title: Text(message.message),
-                  subtitle: Text('${message.user} - ${message.timestamp}'),
-                );
-              },
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    decoration: InputDecoration(
-                      hintText: 'Enter your message',
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : _error.isNotEmpty
+              ? Center(child: Text('Error: $_error'))
+              : Column(
+                  children: [
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: _messages.length,
+                        itemBuilder: (context, index) {
+                          final message = _messages[index];
+                          return ListTile(
+                            title: Text(message.message),
+                            subtitle:
+                                Text('${message.user} - ${message.timestamp}'),
+                          );
+                        },
+                      ),
                     ),
-                  ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _controller,
+                              decoration: InputDecoration(
+                                hintText: 'Enter your message',
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.send),
+                            onPressed: () => _sendMessage(_controller.text),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                IconButton(
-                  icon: Icon(Icons.send),
-                  onPressed: () => _sendMessage(_controller.text),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

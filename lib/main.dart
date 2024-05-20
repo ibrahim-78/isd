@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slider_drawer/flutter_slider_drawer.dart';
 import 'package:overlapping_panels/overlapping_panels.dart';
 import 'package:overlapping_panels_demo/screens/left_page.dart';
+import 'package:overlapping_panels_demo/screens/login_screen.dart';
 import 'package:overlapping_panels_demo/screens/main_page.dart';
 import 'package:overlapping_panels_demo/widgets/footer_widget.dart';
+
+import 'screens/signup_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -40,45 +43,19 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          SliderDrawer(
-            sliderBoxShadow:
-                SliderBoxShadow(color: Colors.blue, blurRadius: 36),
-            key: _key,
-            sliderOpenSize: 329,
-            appBar: SliderAppBar(
-                drawerIcon: IconButton(
-                  onPressed: () {
-                    setState(() {
-                      if (_key.currentState!.isDrawerOpen == false) {
-                        _key.currentState!.openSlider();
-                        footerOffset = const Offset(0, 0);
-                      } else if (_key.currentState!.isDrawerOpen == true) {
-                        _key.currentState!.closeSlider();
-                        footerOffset = const Offset(0, 1);
-                      }
-                    });
-                  },
-                  icon: Icon(Icons.menu),
-                ),
-                appBarColor: Colors.blue,
-                title: Text('Title',
-                    style: const TextStyle(
-                        fontSize: 22, fontWeight: FontWeight.w700))),
-            slider: Builder(builder: (context) {
-              return const LeftPage();
-            }),
-            child: Builder(
-              builder: (context) {
-                return const MainPage();
-              },
-            ),
-          ),
-          FooterWidget(footerOffset: footerOffset)
-        ],
+    return MaterialApp(
+      title: 'Flutter Auth',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
       ),
+      home: LoginScreen(),
+      routes: {
+        '/signup': (context) => SignupScreen(),
+        '/login': (context) => LoginScreen(),
+        '/home': (context) => MainPage(
+              title: 'hello',
+            ),
+      },
     );
   }
 }
